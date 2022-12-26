@@ -342,12 +342,13 @@ export const fnlebnf = (next) => {
     ["\ue000","\ufffd"],
     ["\ud800\udc00","\udb7f\udfff"],
   )
+  const CharExceptRb = except(Char, ']')
   // Char '-' ( Char - ']' )
   // /* ws: explicit */ 
   const CharRange = seq([
-    Char,
+    CharExceptRb,
     char('-'),
-    except(Char, ']'),
+    CharExceptRb,
   ], 'CharRange')
   // '[' '^'? ( Char | CharCode | CharRange | CharCodeRange )+ ']'
   // /* ws: explicit */ 
@@ -358,7 +359,7 @@ export const fnlebnf = (next) => {
       CharCodeRange,
       CharRange,
       CharCode,
-      except(Char, ']'),
+      CharExceptRb,
     ])),
     char(']'),
   ], 'CharClass')
