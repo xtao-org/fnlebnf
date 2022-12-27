@@ -1,0 +1,5 @@
+events -> JS code equivalent to the ebnf
++ boilerplate w/ the main loop
+
+rearrange definitions so that there are no undefined references -- in case of recursion wrap in function (lazy)
+  mvp: wrap all in functions w/o rearranging 
