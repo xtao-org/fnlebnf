@@ -249,17 +249,23 @@ export const fnlebnf = (next) => {
       chunks = []
 
       // todo: if no next.emit then entire emits is pointless -- exit early/make it a noop
-      next.emit?.(name, slice)
+      next.emit?.('done', name, slice)
       return uccb()
     }
 
     let it = fn(ii)
+
+    next.emit?.('start', name)
 
     return (c, i) => {
       const ret = it(c, i)
       if (ret[0] === 'done') {
         const r = ondone(ret[1])
         if (r === false) throw Error('oops')
+      } else if (ret[0] === 'fail') {
+        chunks = []
+        next.emit?.('fail', name)
+        if (uucb() === false) throw Error('oops')
       }
       return ret
     }
@@ -398,7 +404,7 @@ export const fnlebnf = (next) => {
     ]),
   ], 'Primary')(ii)
   // Primary ( '?' | '*' | '+' )*
-  const Item = seq([
+  const Item = emits('Item', seq([
     // zom(Whitespace),
     Primary,
     // zom(Whitespace),
@@ -408,21 +414,21 @@ export const fnlebnf = (next) => {
       emits('oom', char('+')),
     ])),
     // zom(Whitespace),
-  ], 'Item')
+  ], 'Item'))
   // (Item ( '-' Item | Item* ))?
   const SequenceOrDifference = ( //opt(
-    seq([
-      Item,
+    emits('SeqOrDiff', seq([
+      emits('FirstItem', Item),
       alt([
         seq([
           zom(char(' ')),
-          char('-'), 
+          emits('seqdiffminus', char('-')), 
           zom(char(' ')),
-          Item,
+          emits('DifferenceItem', Item),
         ]),
-        zom(seq([zom(char(' ')), Item])),
-      ])
-    ])//, 
+        zom(seq([zom(char(' ')), emits('SequenceItem', Item)])),
+      ]),
+    ]))//, 
     //'SequenceOrDifference'
   )
   // [^#x5D:/?#]+ '://' [^#x5D#]+ ('#' NCName)?
@@ -438,9 +444,7 @@ export const fnlebnf = (next) => {
     ]))
   ], 'URL')
   // '[' URL ']'
-  const Link = (ii) => 
-  { 
-    console.log('LINK******************')
+  const Link = (ii) => {
     return seq([
       // zom(Whitespace),
       char('['), 
@@ -452,15 +456,15 @@ export const fnlebnf = (next) => {
     ], 'Link')(ii)
   }
   // SequenceOrDifference ( '|' SequenceOrDifference )*
-  const Choice = seq([
-    SequenceOrDifference,
+  const Choice = emits('choice', seq([
+    emits('firstseqordiff', SequenceOrDifference),
     zom(seq([
       zom(char(' ')),
-      char('|'),
+      emits('choicebar', char('|')),
       zom(char(' ')),
-      SequenceOrDifference,
+      emits('altseqordiff', SequenceOrDifference),
     ], ' | SequenceOrDifference'))
-  ], 'Choice')
+  ], 'Choice'))
   // NCName '::=' ( Choice | Link )
   const Production = seq([
     // zom(Whitespace),
@@ -472,7 +476,7 @@ export const fnlebnf = (next) => {
       Link,
       Choice,
     ], 'Choice | Link'),
-    zom(Whitespace),
+    emits('ProductionEnd', zom(Whitespace)),
   ], 'Production')
   // Production*
   const Grammar = zom(Production, 'Grammar')
