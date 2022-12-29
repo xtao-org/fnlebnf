@@ -4,4 +4,6 @@ events -> JS code equivalent to the ebnf
 rearrange definitions so that there are no undefined references -- in case of recursion wrap in function (lazy)
   mvp: wrap all in functions w/o rearranging 
 
+  determine dependencies for a Production by looking at all NCNames on its rhs & do topological sort of thus obtained graph
+
 debug mode: emit every single rule/or every top-level rule
