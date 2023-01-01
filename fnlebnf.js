@@ -265,7 +265,7 @@ export const fnlebnf = (next) => {
       } else if (ret[0] === 'fail') {
         chunks = []
         next.emit?.('fail', name)
-        if (uucb() === false) throw Error('oops')
+        if (uccb() === false) throw Error('oops')
       }
       return ret
     }
@@ -387,7 +387,7 @@ export const fnlebnf = (next) => {
   // Name - (Char* ':' Char*)	/* An XML Name, minus the ":" */
   const NCName = Name
   // NCName | StringLiteral | CharCode | CharClass | '(' Choice ')'
-  const Primary = (ii) => alt([
+  const Primary = (ii) => emits('Primary', alt([
     // opt(Whitespace),
     emits('PrimaryName', NCName),
     // opt(Whitespace),
@@ -402,7 +402,7 @@ export const fnlebnf = (next) => {
       zom(char(' ')),
       char(')'),
     ]),
-  ], 'Primary')(ii)
+  ], 'Primary'))(ii)
   // Primary ( '?' | '*' | '+' )*
   const Item = emits('Item', seq([
     // zom(Whitespace),
