@@ -210,6 +210,35 @@ const lit = (str) => ii => {
   }
 }
 
+// case-insensitive version of lit
+// todo: test
+const liti = (str) => {
+  // todo: ascii
+  const low = str.toLowercase()
+  const up = str.toUppercase()[Symbol.iterator]()
+
+  const zipped = []
+  for (const c of low) {
+    const x = [c]
+    const d = up.next().value
+    if (c !== d) x.push(d)
+    zipped.push(x)
+  }
+  return ii => {
+    let index = 0
+    return (c, i) => {
+      // console.log("LIT", i, c, str, index)
+      if (zipped[index].some(d => d === c)) {
+        ++index
+        if (index >= str.length) return ['done', i + 1]
+        // console.log(str, index, i)
+        return ['pending', i + 1]
+      }
+      return ['fail', i]
+    }
+  }
+}
+
 export const fnlebnf = (next) => {
   const ccbs = new Set()
   const registerChunkCb = (cb) => {
